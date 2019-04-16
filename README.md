@@ -17,12 +17,21 @@ These scripts can do the following:
 * **jremotesitesbackup**<br/>The jremotesitesbackup script creates backups of all Joomla websites on your Runcloud server by trying to execute the Akeeba Backup CLI script for each website found. Obviously Akeeba Backup needs to be installed on these Joomla websites. If the script can't find Akeeba Backup it tries to create a tar-gzip or zip backup. All backups are stored in a separated map on the server, default at /backups/jpatmp. These backups have no date/time stamp. This script was specifically designed to use in combination with the transferbackups script.
 * **transferbackups**<br/>The transferbackups script transfers backups found at /backups/jpatmp to a remote Hetzner storage box. Optionally the local backup files are deleted after transfer.
 
-##Installation instructions
+## Installation instructions
 1. Copy all scripts to the map /usr/local/sbin on your Runcloud server.
+
 2. Make each script executable by doing chmod +x for each script.
+
 3. Create folders for the storage of backups:
 ```
 mkdir -p /backups/mysql; mkdir -p /backups/sites; mkdir -p /backups/jpatmp
 ```
 
-Each script can be called with a -h (help) parameter to see the various options.
+4. Create cronjobs to run regaular backups:
+```
+mkdir -p /backups/mysql; mkdir -p /backups/sites; mkdir -p /backups/jpatmp
+```
+# create a backup every night at 2:30 for all Joomla websites
+30 2 * * * /usr/local/sbin/jsitesbackup -s
+# create a database dumop every 6 hours for all Joomla websites
+20 */6 * * * /usr/local/sbin/jdbdumpall -s
