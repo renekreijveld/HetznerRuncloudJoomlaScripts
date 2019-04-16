@@ -1,0 +1,119 @@
+#!/bin/bash
+  
+# transferbackups -- This scripts trafsfers all backups found at storepath to a Hetzner Storage Box
+# See also: https://www.hetzner.de/storage-box
+# 
+# Attention: the sshpass tool needs to be installed on your server.
+# Install on Ubuntu with: sudo apt install sshpass
+#
+# Copyright 2014 - 2019 Rene Kreijveld - email@renekreijveld.nl
+#
+# This program is free software; you may redistribute it and/or modify it.
+#
+# Version history
+# 1.0 Initial version
+
+# define variables
+# version
+version=1.0
+# where are the backups stored 
+storepath=/backups/jpatmp
+# calculate the day of week, 0 = sunday, 6 = saturday
+dow=$(date +"%w")
+# storage box server
+sbserver=your_storagebox_username_here.your-storagebox.de
+# storage box user name
+sbusername=your_storagebox_username_here
+# storage box password
+sbpasswd=your_storagebox_password_here
+# storage box backup folder where the backup files are copied to
+sbfolder=web4
+
+# determine path of script
+mypath=$(cd $(dirname ${0}); pwd -P)
+myname=$(basename ${0})
+
+# check if folder for backup storage exists
+if [ ! -d "${storepath}" ]
+then
+	echo "Cannot continue, storepath ("${storepath}") does not exist!"
+	exit 1
+fi
+
+# create dummy folder if needed
+if [ ! -d /dummy ]
+then
+	mkdir /dummy
+fi
+
+# display usage information
+usage() {
+	echo ""
+	echo "${myname} version ${version}, written by Rene Kreijveld."
+	echo ""
+	echo "Usage: ${myname} [-d] [-s] [-h]"
+	echo ""
+	echo "-d Delete. Delete local file(s) after transfer."
+	echo "-s Silent. Do not display any messages to standard output."
+	echo "-h Help. Display this info."
+	echo ""
+	exit 0
+}
+
+# process the arguments
+delete="no"
+silent="no"
+while getopts dsh opt
+do
+	case "${opt}" in
+		d)
+			delete="yes"
+			;;
+		s)
+			silent="yes"
+			;;
+		h)
+			usage
+			;;
+		\?)
+			echo "Invalid option: -$OPTARG" >&2
+			exit 1
+			;;
+		:)
+			echo "Option -$OPTARG requires an argument." >&2
+			exit 1
+			;;
+	esac
+done
+
+if [ "${silent}" == "no" ]
+then
+	echo ""
+	echo "${myname} version ${version}, written by Rene Kreijveld."
+	echo ""
+fi
+
+cd /dummy
+# go to the map with the backups
+cd ${storepath}
+for file in $(find . -type f)
+do
+	# create database dump
+	if [ "${silent}" == "no" ]
+	then
+		echo "`date +"%H:%M:%S"` Transferring file ${file}"
+	fi
+	sshpass -p "${sbpasswd}" scp ${file} ${sbusername}@${sbserver}:/${sbfolder}/${dow}
+	if [ "${silent}" == "no" ]
+	then
+		echo "`date +"%H:%M:%S"` File ${file} copied to storage box."
+	fi
+	if [ "${delete}" == "yes" ]
+	then
+		if [ "${silent}" == "no" ]
+		then
+			echo "`date +"%H:%M:%S"` Deleting file ${file}"
+		fi
+		rm -f ${file}
+	fi
+done

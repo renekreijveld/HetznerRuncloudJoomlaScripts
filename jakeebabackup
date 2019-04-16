@@ -1,0 +1,111 @@
+#!/bin/bash
+
+# jakeebabackup -- Backup a Joomla website with Akeeba Backup CLI
+# Supports Joomla versions 2.5 - 3.x
+#
+# Copyright 2014 - 2019 Rene Kreijveld - email@renekreijveld.nl
+# This program is free software; you may redistribute it and/or modify it.
+#
+# Warning! This script needs the file jfunctions. This has to be installed in the same directory as this script.
+#
+# Version history
+# 1.0 Initial version
+# 1.1 Modified path to php for Runcloud servers
+
+# define variables
+# version
+version=1.1
+
+# where to store backup files
+storepath=/backups/sites
+
+# determine path of script
+mypath=$(cd $(dirname ${0}); pwd -P)
+myname=$(basename ${0})
+
+if [ ! -d "${storepath}" ]
+then
+    echo "Cannot continue, storepath ("${storepath}") does not exist!"
+    exit 1
+fi
+
+# find mail client
+if [ -s /bin/mail ]; then
+    mailprog=/bin/mail
+elif [ -s /usr/bin/mail ]; then
+    mailprog=/usr/bin/mail
+fi
+
+# display usage information
+usage() {
+    echo ""
+    echo "${myname} version ${version}, written by Rene Kreijveld."
+    echo ""
+    echo "Usage: ${myname} [-n <email>] [-h]"
+    echo ""
+    echo "-n Send notification to <email> (comma-separated list of email addresses, without spaces)"
+    echo "-h Help. Display this info."
+    echo ""
+    exit 0
+}
+
+# process command-line arguments
+while getopts n:h opt; do
+    case "${opt}" in
+        n)
+            notify="yes"
+            receivers=${OPTARG}
+            ;;
+        h)
+            usage
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument." >&2
+            exit 1
+            ;;
+    esac
+done
+
+# include general functions
+if [ ! -e ${mypath}/jfunctions ]
+then
+    echo ""
+    echo "Cannot continue: script jfunctions not found."
+    echo ""
+    exit 1
+else
+    # gather joomla information
+    . ${mypath}/jfunctions
+fi
+
+# check if akeeba-backup script exists
+if [ ! -e cli/akeeba-backup.php ]
+then
+    echo ""
+    echo "Cannot continue: php script akeeba-backup.php in cli map not found."
+    echo ""
+    exit 1
+fi
+
+echo ""
+echo "${myname} version ${version}, written by Rene Kreijveld."
+echo ""
+echo "This is a Joomla! ${versr}.${versd} site. Starting Akeeba Backup CLI script."
+
+# create the backup
+cd cli
+/usr/bin/php akeeba-backup.php >/dev/null 2>&1
+cd ..
+# move backup to backup store path
+mv administrator/components/com_akeeba/backup/*.jpa ${storepath}
+# notify (if necessary)
+if [ "${notify}" == "yes" ]
+then
+    echo "`date` Akeeba Backup site ${sitenameclean} is finished." | ${mailprog} -s "Akeeba Backup ${sitenameclean} ready" "${receivers}"
+fi
+echo "Akeeba Backups are stored in ${storepath}:"
+ls -lat ${storepath}

@@ -1,0 +1,140 @@
+#!/bin/bash
+
+# jdbdumpall - Create a backup of the MySQL databases of all Joomla instances
+#
+# Copyright 2018 - 2019 Rene Kreijveld - email@renekreijveld.nl
+#
+# This program is free software; you may redistribute it and/or modify it.
+#
+# Version history
+# 1.0 Initial version
+
+# define variables
+# version
+version=1.0
+# start folder where we start searching
+startdir=/home
+# where to store backup files
+storepath=/backups/mysql
+# what logfile to use
+logfile=/usr/local/sbin/sitesbackup.log
+# number of backups to retain
+savebackups=4
+# display messages
+silent="no"
+
+# determine path of script
+mypath=$(cd $(dirname ${0}); pwd -P)
+myname=$(basename ${0})
+
+# check if folder for backup storage exists
+if [ ! -d "${storepath}" ]
+then
+	echo "Cannot continue, storepath ("${storepath}") does not exist!"
+	exit 1
+fi
+
+# create dummy folder if needed
+if [ ! -d /dummy ]
+then
+	mkdir /dummy
+fi
+
+# display usage information
+usage() {
+	echo ""
+	echo "${myname} version ${version}, written by Rene Kreijveld."
+	echo ""
+	echo "Usage: ${myname} [-b <backups>] [-s] [-h]"
+	echo ""
+	echo "-b Number of backups to keep, '-b 2' means keep 2 backups. Default is 4."
+	echo "-s Silent. Do not display any messages to standard output."
+	echo "-h Help. Display this info."
+	echo ""
+	exit 0
+}
+
+# process the arguments
+while getopts b:sh opt
+do
+	case "${opt}" in
+		b)
+			savebackups=${OPTARG}
+			;;
+		s)
+			silent="yes"
+			;;
+		h)
+			usage
+			;;
+		\?)
+			echo "Invalid option: -$OPTARG" >&2
+			exit 1
+			;;
+		:)
+			echo "Option -$OPTARG requires an argument." >&2
+			exit 1
+			;;
+	esac
+done
+
+if [ "${silent}" == "no" ]
+then
+	echo ""
+	echo "${myname} version ${version}, written by Rene Kreijveld."
+	echo ""
+fi
+
+for dir in $(find ${startdir} -maxdepth 4 -type d)
+do
+	if [ -f ${dir}/configuration.php ]
+	then
+		# possible joomla found
+		if [ "${silent}" == "no" ]
+		then
+			echo "Possible Joomla found at ${dir}."
+		fi
+		cd ${dir}
+		if [ ! -e ${mypath}/jfunctions ]
+		then
+			echo ""
+			echo "Cannot continue: script jfunctions not found."
+			echo ""
+			exit 1
+		fi
+		# include general functions
+		. ${mypath}/jfunctions
+		# create backup
+		if [ "${silent}" == "no" ]
+		then
+			echo "`date +"%H:%M:%S"` start database backup for ${sitenameclean}."
+		fi
+		echo "`date` Start database backup ${sitenameclean}" >> ${logfile}
+		now=$(date +"%Y%m%d-%H%M%S")
+		# dump the database to a .sql file
+		if mysqldump --skip-opt --add-drop-table --add-locks --create-options --disable-keys --lock-tables --quick --set-charset --host=${host} --user=${dbuser} --password=${password} ${database} > ${database}.${now}.sql
+		then
+			echo "`date` database dump created for ${sitenameclean}" >> ${logfile}
+		else
+			echo "Error creating database dump."
+			exit 1
+		fi
+
+		# gzip database dump
+		gzip -q ${database}.${now}.sql
+
+		# move database backup to storage location
+		mv ${database}.${now}.sql.gz ${storepath}
+
+		if [ "${silent}" == "no" ]
+		then
+			echo "`date +"%H:%M:%S"` database backup for ${sitenameclean} finished."
+			echo ""
+		fi
+		echo "`date` End database backup ${sitenameclean}" >> ${logfile}
+	fi
+done
+
+# cleanup backups older than savebackups days
+cd /dummy
+find ${storepath}/* -type f -mtime +${savebackups} -delete
