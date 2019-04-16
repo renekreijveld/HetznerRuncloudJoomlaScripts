@@ -18,4 +18,5 @@ These scripts can do the following:
 * **transferbackups** The transferbackups transfers backups found at /backups/jpatmp to a remote Hetzner storage box. Optionally the local backup files are deleted after transfer.
 
 All of these scripts should be installed at /usr/local/sbin with the execute flag on.
+
 Each script can be called with a -h (help) parameter to see the various options.
