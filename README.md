@@ -48,3 +48,5 @@ mkdir -p /backups/mysql; mkdir -p /backups/sites; mkdir -p /backups/jpatmp
 # create a database dump every 6 hours for all Joomla websites
 20 */6 * * * /usr/local/sbin/jdbdumpall -s
 ```
+
+All scripts written by René Kreijveld.
