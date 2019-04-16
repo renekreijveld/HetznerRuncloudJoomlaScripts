@@ -29,9 +29,8 @@ mkdir -p /backups/mysql; mkdir -p /backups/sites; mkdir -p /backups/jpatmp
 
 4. Create cronjobs to run regaular backups:
 ```
-mkdir -p /backups/mysql; mkdir -p /backups/sites; mkdir -p /backups/jpatmp
-```
 # create a backup every night at 2:30 for all Joomla websites
 30 2 * * * /usr/local/sbin/jsitesbackup -s
 # create a database dumop every 6 hours for all Joomla websites
 20 */6 * * * /usr/local/sbin/jdbdumpall -s
+```
