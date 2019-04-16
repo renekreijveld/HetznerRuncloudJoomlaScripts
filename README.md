@@ -5,8 +5,7 @@ These scripts are specifically designed to use on Runcloud powered servers runni
 
 These scripts can do the following:
 
-* **jfunctions**
-The jfunctions script retrieves general information about a Joomla website like Joomla version, sitename, database credentials etc. This script is used by most other scripts.
+* **jfunctions**<br/>The jfunctions script retrieves general information about a Joomla website like Joomla version, sitename, database credentials etc. This script is used by most other scripts.
 * **joomlainfo** The joomlainfo script display general information about a Joomla website.
 * **jlistjoomlas** The jlistjoomlas script searches and lists all Joomla websites found on your Runcloud server.
 * **jdbdump** The jdbdump script creates a database dump of a Joomla website.
