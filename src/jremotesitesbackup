@@ -208,8 +208,8 @@ then
 	if [ "${silent}" == "no" ]
 	then
 		echo "Starting transfer script now"
-		/usr/local/sbin/transferbackups -d
+		/usr/local/sbin/jtransferbackups -d
 	else
-		/usr/local/sbin/transferbackups -d -s
+		/usr/local/sbin/jtransferbackups -d -s
 	fi
 fi

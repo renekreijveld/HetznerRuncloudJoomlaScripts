@@ -1,6 +1,6 @@
 #!/bin/bash
   
-# transferbackups -- This scripts trafsfers all backups found at storepath to a Hetzner Storage Box
+# jtransferbackups -- This scripts trafsfers all backups found at storepath to a Hetzner Storage Box
 # See also: https://www.hetzner.de/storage-box
 # 
 # Attention: the sshpass tool needs to be installed on your server.
