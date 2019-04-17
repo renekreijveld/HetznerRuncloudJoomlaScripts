@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# jsitesbackup -- Create a full backup (including database) of all Joomla websites.
+# jremotesitesbackup -- Create a full backup (including database) of all Joomla websites.
 # This script initially tries to backup the site with Akeeba Backup.
 # If Akeeba Backup is not found, a .tgz backup will be created of the website
 # 

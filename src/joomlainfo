@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# jinfo -- Provide information about this Joomla! installation.
+# joomlainfo -- Provide information about this Joomla! installation.
 # Supports Joomla 1.0 - 3.x
 #
 # Copyright 2014 - 2018 Rene Kreijveld - email@renekreijveld.nl
